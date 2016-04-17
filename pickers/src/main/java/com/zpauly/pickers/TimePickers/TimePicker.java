@@ -28,7 +28,7 @@ import java.util.List;
 public class TimePicker extends View {
     private Context mContext;
 
-    private boolean isDarkTheme;
+    private boolean isDarkTheme = false;
 
     private int mPrimaryColor;
     private final int mHorizontalPadding = 24;
@@ -40,13 +40,13 @@ public class TimePicker extends View {
     private Point presentTime;
     private int currentHour;
     private int currentMinute;
+    private Point touchTime = null;
     private List<Point> clockTime = new ArrayList<>();
 
     private int mScreeWidth;
     private int mScreeHeight;
 
-    private Paint mPaint;
-    private Path mPath;
+    private Paint mPaint = new Paint();
 
     public TimePicker(Context context) {
         this(context, null);
@@ -72,6 +72,7 @@ public class TimePicker extends View {
     private void initView() {
         getWindowParams();
         initArguments();
+        setBackground(null);
     }
 
     private void initArguments() {
@@ -110,11 +111,6 @@ public class TimePicker extends View {
     }
 
     @Override
-    protected void onLayout(boolean changed, int l, int t, int r, int b) {
-
-    }
-
-    @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
         drawClock(canvas);
@@ -132,12 +128,12 @@ public class TimePicker extends View {
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
-        Point touchTime = null;
-        isClickClockTime(event, touchTime);
+        isClickClockTime(event);
+        isMoveClockTime(event);
         return true;
     }
 
-    private boolean isClickClockTime(MotionEvent event, Point touchTime) {
+    private boolean isClickClockTime(MotionEvent event) {
         switch (event.getAction()) {
             case MotionEvent.ACTION_DOWN :
                 for (Point point : clockTime) {
@@ -165,7 +161,8 @@ public class TimePicker extends View {
         return false;
     }
 
-    private boolean isMoveClockTime(MotionEvent event, Point touchTime) {
+    private boolean isMoveClockTime(MotionEvent event) {
+        final float textRadius = clockRadius - mHorizontalPadding;
         boolean flag = false;
         float previousX = 0;
         float previousY = 0;
@@ -185,10 +182,18 @@ public class TimePicker extends View {
                 if (flag) {
                     lastX = event.getX();
                     lastY = event.getY();
-                    if ()
+                    double angle = Math.atan((centerY - lastY) / (lastX - centerX));
+                    touchTime.set((int) (textRadius * Math.cos(angle)),
+                            (int) (textRadius * Math.sin(angle)));
+                    presentTime = touchTime;
+                    invalidate();
                 }
-
+                break;
+            case MotionEvent.ACTION_UP :
+                flag = false;
+                break;
         }
+        return flag;
     }
 
     private void drawClock(Canvas canvas) {
