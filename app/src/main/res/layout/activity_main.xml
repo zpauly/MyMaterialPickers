@@ -10,7 +10,10 @@
     android:gravity="center"
     tools:context="com.zpauly.materialpickers.MainActivity">
 
+
     <com.zpauly.pickers.TimePickers.TimePicker
+        android:id="@+id/picker"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"/>
+
 </RelativeLayout>
