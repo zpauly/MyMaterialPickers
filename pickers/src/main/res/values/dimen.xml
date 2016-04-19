@@ -1,5 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <dimen name="text_padding">12dp</dimen>
-    <dimen name="text_size">8sp</dimen>
+    <dimen name="horizontal_padding">24dp</dimen>
+    <dimen name="text_background_radius">36dp</dimen>
+    <dimen name="clock_text_size">40sp</dimen>
+
+    <dimen name="time_text_size">100sp</dimen>
+    <dimen name="am_pm_text_size">40sp</dimen>
 </resources>
