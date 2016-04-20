@@ -46,8 +46,8 @@ public class TimePicker extends FrameLayout {
     private float textRadius;
     private float centerX;
     private float centerY;
-    private boolean isHours = true;
-    private boolean isMinutes = false;
+    private boolean isHours = false;
+    private boolean isMinutes = true;
     private Point presentTime;
     private int currentHour;
     private int currentMinute;
@@ -64,6 +64,12 @@ public class TimePicker extends FrameLayout {
     private ClockText mClockText;
 
     private Paint mPaint = new Paint();
+
+    private OnTimeSelectedlistener mOnTimeSelectedListener;
+
+    public interface OnTimeSelectedlistener {
+        void onTimeSelected();
+    }
 
     public TimePicker(Context context) {
         this(context, null);
@@ -129,9 +135,9 @@ public class TimePicker extends FrameLayout {
         Log.i("minute", String.valueOf(currentMinute));
 
         if (isPhone) {
-            clockRadius = (mScreenWidth - 12 * mHorizontalPadding) / 2;
+            clockRadius = (mScreenWidth - 14 * mHorizontalPadding) / 2;
         } else {
-            clockRadius = (mScreenHeight - 12 * mHorizontalPadding) / 2;
+            clockRadius = (mScreenHeight - 14 * mHorizontalPadding) / 2;
         }
 
         centerX = clockRadius;
@@ -171,8 +177,8 @@ public class TimePicker extends FrameLayout {
             int height = width;
             setMeasuredDimension(width, height);
         } else {
-            int height = mScreenHeight - 10 * mHorizontalPadding;
-            int width = height;
+            int width = mScreenHeight - 10 * mHorizontalPadding;
+            int height = width;
             setMeasuredDimension(width, height);
         }
     }
@@ -188,6 +194,9 @@ public class TimePicker extends FrameLayout {
                     clockHandAnim();
                     presentTime.set(clockTime.get(i - 1).x, clockTime.get(i - 1).y);
                     currentAngle = aimAngle;
+                }
+                if (mOnTimeSelectedListener != null) {
+                    mOnTimeSelectedListener.onTimeSelected();
                 }
                 break;
             case MotionEvent.ACTION_MOVE :
@@ -232,6 +241,10 @@ public class TimePicker extends FrameLayout {
         wm.getDefaultDisplay().getSize(point);
         mScreenHeight = point.y;
         mScreenWidth = point.x;
+    }
+
+    public void setOnTimeSelectedListener(OnTimeSelectedlistener listener) {
+        this.mOnTimeSelectedListener = listener;
     }
 
     public void setDarkTheme(boolean darkTheme) {
@@ -415,11 +428,6 @@ public class TimePicker extends FrameLayout {
                 drawHours(canvas);
             }
             if (isMinutes) {
-                for (Point point : clockTime) {
-                    if (point.x != presentTime.x || point.y != presentTime.y) {
-                        continue;
-                    }
-                }
                 drawMinutes(canvas);
             }
         }

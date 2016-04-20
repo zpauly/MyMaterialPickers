@@ -9,6 +9,7 @@ import android.os.Build;
 import android.util.AttributeSet;
 import android.util.TypedValue;
 import android.view.Gravity;
+import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.LinearLayout;
@@ -17,9 +18,8 @@ import android.widget.TextView;
 import com.zpauly.pickers.R;
 import com.zpauly.pickers.utils.ColorUtils;
 
-import java.util.Calendar;
+import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.GregorianCalendar;
 
 /**
  * Created by root on 16-4-19.
@@ -33,6 +33,8 @@ public class Header extends LinearLayout {
     private int mTimeSize;
     private int mAmPmSize;
     private int mHorizontalPadding;
+    private int mComponentsMargin;
+    private int mLayoutMargin;
 
     private Context mContext;
 
@@ -74,16 +76,16 @@ public class Header extends LinearLayout {
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
-        int width = 0;
-        int height = 0;
+        getWindowParams();
         if (isPhone) {
-            width = mScreenWidth - 12 * mHorizontalPadding;
-            height = mTimeLayout.getHeight() + getPaddingTop() + getPaddingBottom();
+            int width = mScreenWidth - 12 * mHorizontalPadding;
+            int height = mTimeLayout.getHeight() + getPaddingTop() + getPaddingBottom();
+            setMeasuredDimension(width, height);
         } else {
-            height = mScreenHeight - 12 * mHorizontalPadding;
-            width = mTimeLayout.getWidth() + getPaddingLeft() + getPaddingRight();
+            int height = mScreenHeight - 12 * mHorizontalPadding;
+            int width = mTimeLayout.getWidth() + getPaddingLeft() + getPaddingRight();
+            setMeasuredDimension(width, height);
         }
-        setMeasuredDimension(width, height);
     }
 
     private void initView() {
@@ -105,14 +107,19 @@ public class Header extends LinearLayout {
 
         LayoutParams timeLayoutParams = new LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT);
+        timeLayoutParams.setMargins(0, mLayoutMargin, mComponentsMargin, mLayoutMargin);
         initTimeLayout();
         addView(mTimeLayout, -1, timeLayoutParams);
 
         LayoutParams amOrPmLayoutParams = new LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT);
+        timeLayoutParams.setMargins(mComponentsMargin * 5, mLayoutMargin, 0, mLayoutMargin);
         initAmOrPmLayout();
         addView(mAMOrPMLayout, -1, amOrPmLayoutParams);
 
+        setBackgroundColor(mPrimaryColor);
+
+        setSelected();
     }
 
     @SuppressWarnings("deprecation")
@@ -120,6 +127,8 @@ public class Header extends LinearLayout {
         mHorizontalPadding = getResources().getDimensionPixelOffset(R.dimen.horizontal_padding);
         mTimeSize = getResources().getDimensionPixelSize(R.dimen.time_text_size);
         mAmPmSize = getResources().getDimensionPixelSize(R.dimen.am_pm_text_size);
+        mComponentsMargin = getResources().getDimensionPixelOffset(R.dimen.header_components_margin);
+        mLayoutMargin = getResources().getDimensionPixelOffset(R.dimen.header_layout_margin);
 
         getWindowParams();
         fetchPrimaryColor();
@@ -128,8 +137,8 @@ public class Header extends LinearLayout {
         currentHour = current.getHours();
         currentMinute = current.getMinutes();
 
-        GregorianCalendar ca = new GregorianCalendar();
-        if (ca.get(GregorianCalendar.AM_PM) == 0) {
+        SimpleDateFormat ft = new SimpleDateFormat("aa");
+        if (ft.format(current).equals("AM")) {
             selectAm = true;
             selectPm = false;
         } else {
@@ -140,31 +149,32 @@ public class Header extends LinearLayout {
 
     private void initTimeLayout() {
         mTimeLayout.setOrientation(LinearLayout.HORIZONTAL);
+        mTimeLayout.setBackground(null);
 
-        LinearLayout.LayoutParams hourLayoutParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,
+        LayoutParams hourLayoutParams = new LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT);
         initHour();
         mTimeLayout.addView(mHour, -1, hourLayoutParams);
 
-        LinearLayout.LayoutParams colonLayoutParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,
+        LayoutParams colonLayoutParams = new LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT);
         initColon();
         mTimeLayout.addView(mColon, -1, colonLayoutParams);
 
-        LinearLayout.LayoutParams minuteLayoutParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,
+        LayoutParams minuteLayoutParams = new LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT);
         initMinute();
         mTimeLayout.addView(mMinute, -1, minuteLayoutParams);
     }
 
     private void initHour() {
-        mHour.setText(currentHour);
+        mHour.setText(String.valueOf(currentHour));
         if (selectHours) {
             mHour.setTextColor(ColorUtils.getColorWithAlpha(Color.rgb(255, 255, 255), 0.87f));
         } else {
             mHour.setTextColor(ColorUtils.getColorWithAlpha(Color.rgb(255, 255, 255), 0.54f));
         }
-        mColon.setTextSize(mTimeSize);
+        mHour.setTextSize(mTimeSize);
     }
 
     private void initColon() {
@@ -174,17 +184,18 @@ public class Header extends LinearLayout {
     }
 
     private void initMinute() {
-        mMinute.setText(currentMinute);
+        mMinute.setText(String.valueOf(currentMinute));
         if (selectMinutes) {
-            mHour.setTextColor(ColorUtils.getColorWithAlpha(Color.rgb(255, 255, 255), 0.87f));
+            mMinute.setTextColor(ColorUtils.getColorWithAlpha(Color.rgb(255, 255, 255), 0.87f));
         } else {
-            mHour.setTextColor(ColorUtils.getColorWithAlpha(Color.rgb(255, 255, 255), 0.54f));
+            mMinute.setTextColor(ColorUtils.getColorWithAlpha(Color.rgb(255, 255, 255), 0.54f));
         }
-        mColon.setTextSize(mTimeSize);
+        mMinute.setTextSize(mTimeSize);
     }
 
     private void initAmOrPmLayout() {
         mAMOrPMLayout.setOrientation(LinearLayout.VERTICAL);
+        mAMOrPMLayout.setBackground(null);
 
         LayoutParams amLayoutParams = new LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT);
@@ -193,6 +204,7 @@ public class Header extends LinearLayout {
 
         LayoutParams pmLayoutParams = new LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT);
+        pmLayoutParams.setMargins(0, mComponentsMargin, 0, mComponentsMargin);
         initPm();
         mAMOrPMLayout.addView(mPM, -1, pmLayoutParams);
     }
@@ -201,17 +213,17 @@ public class Header extends LinearLayout {
         mAM.setText(getResources().getString(R.string.am));
         mAM.setTextSize(mAmPmSize);
         if (selectAm) {
-            mHour.setTextColor(ColorUtils.getColorWithAlpha(Color.rgb(255, 255, 255), 0.87f));
+            mAM.setTextColor(ColorUtils.getColorWithAlpha(Color.rgb(255, 255, 255), 0.87f));
         } else {
-            mHour.setTextColor(ColorUtils.getColorWithAlpha(Color.rgb(255, 255, 255), 0.54f));
+            mAM.setTextColor(ColorUtils.getColorWithAlpha(Color.rgb(255, 255, 255), 0.54f));
         }
     }
 
     private void initPm() {
         if (selectPm) {
-            mHour.setTextColor(ColorUtils.getColorWithAlpha(Color.rgb(255, 255, 255), 0.87f));
+            mPM.setTextColor(ColorUtils.getColorWithAlpha(Color.rgb(255, 255, 255), 0.87f));
         } else {
-            mHour.setTextColor(ColorUtils.getColorWithAlpha(Color.rgb(255, 255, 255), 0.54f));
+            mPM.setTextColor(ColorUtils.getColorWithAlpha(Color.rgb(255, 255, 255), 0.54f));
         }
         mPM.setText(getResources().getString(R.string.pm));
         mPM.setTextSize(mAmPmSize);
@@ -231,5 +243,51 @@ public class Header extends LinearLayout {
         int color = typedArray.getColor(0, 0);
         typedArray.recycle();
         mPrimaryColor = color;
+    }
+
+    public void setHour(CharSequence sequence) {
+        mHour.setText(sequence);
+    }
+
+    public void setMinute(CharSequence sequence) {
+        mMinute.setText(sequence);
+    }
+
+    public void setSelected() {
+        mHour.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                selectHours = true;
+                selectMinutes = false;
+                invalidate();
+            }
+        });
+
+        mHour.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                selectMinutes = true;
+                selectHours = false;
+                invalidate();
+            }
+        });
+
+        mAM.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                selectAm = true;
+                selectPm = false;
+                invalidate();
+            }
+        });
+
+        mPM.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                selectPm = true;
+                selectAm = false;
+                invalidate();
+            }
+        });
     }
 }
