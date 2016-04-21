@@ -8,4 +8,15 @@
     <dimen name="am_pm_text_size">10sp</dimen>
     <dimen name="header_components_margin">2dp</dimen>
     <dimen name="header_layout_margin">10dp</dimen>
+
+    <dimen name="button_min_width">64dp</dimen>
+    <dimen name="button_external_padding">8dp</dimen>
+    <dimen name="button_internal_padding">8dp</dimen>
+    <dimen name="button_height">36dp</dimen>
+    <dimen name="touch_target">48dp</dimen>
+
+    <dimen name="simple_date_text_size">14sp</dimen>
+    <dimen name="simple_year_text_size">21sp</dimen>
+    <dimen name="selected_year_text_size">30sp</dimen>
+    <dimen name="text_padding">8dp</dimen>
 </resources>

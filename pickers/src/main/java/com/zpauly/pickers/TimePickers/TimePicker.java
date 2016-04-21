@@ -37,7 +37,7 @@ public class TimePicker extends FrameLayout {
     private boolean isDarkTheme = false;
 
     private int mPrimaryColor;
-    private int mHorizontalPadding;
+    private int mPadding;
     private final int mHourAngle = 30;
     private final int mMinuteAngle = 6;
     private float textBackgroundRadius;
@@ -46,8 +46,8 @@ public class TimePicker extends FrameLayout {
     private float textRadius;
     private float centerX;
     private float centerY;
-    private boolean isHours = false;
-    private boolean isMinutes = true;
+    private boolean isHours = true;
+    private boolean isMinutes = false;
     private Point presentTime;
     private int currentHour;
     private int currentMinute;
@@ -93,7 +93,7 @@ public class TimePicker extends FrameLayout {
     }
 
     private void initView() {
-        getWindowParams();
+        /*isPhone = DevicesUtils.isTablet(mContext);*/
         initArguments();
         mClock = new Clock(mContext);
         mClockHand = new ClockHand(mContext);
@@ -102,29 +102,30 @@ public class TimePicker extends FrameLayout {
         FrameLayout.LayoutParams clockLayoutParams = new FrameLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT);
         clockLayoutParams.gravity = Gravity.CENTER;
-        clockLayoutParams.setMargins(mHorizontalPadding, mHorizontalPadding, mHorizontalPadding, mHorizontalPadding);
+        clockLayoutParams.setMargins(mPadding, mPadding, mPadding, mPadding);
         addView(mClock, -1, clockLayoutParams);
 
         FrameLayout.LayoutParams handLayoutParams = new FrameLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT);
         handLayoutParams.gravity = Gravity.CENTER;
-        handLayoutParams.setMargins( mHorizontalPadding, mHorizontalPadding, mHorizontalPadding,
-                mHorizontalPadding);
+        handLayoutParams.setMargins( mPadding, mPadding, mPadding,
+                mPadding);
         addView(mClockHand, -1, handLayoutParams);
 
         FrameLayout.LayoutParams textLayoutParams = new FrameLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT);
         textLayoutParams.gravity = Gravity.CENTER;
-        textLayoutParams.setMargins(mHorizontalPadding, mHorizontalPadding, mHorizontalPadding, mHorizontalPadding);
+        textLayoutParams.setMargins(mPadding, mPadding, mPadding, mPadding);
         addView(mClockText, -1, textLayoutParams);
     }
 
     @SuppressWarnings("deprecation")
     private void initArguments() {
-        mHorizontalPadding = getResources().getDimensionPixelOffset(R.dimen.horizontal_padding);
+        mPadding = getResources().getDimensionPixelOffset(R.dimen.horizontal_padding);
         textBackgroundRadius = getResources().getDimensionPixelOffset(R.dimen.text_background_radius);
         mTextSize = getResources().getDimensionPixelSize(R.dimen.clock_text_size);
 
+        getWindowParams();
         fetchPrimaryColor();
 
         Date date = new Date();
@@ -135,17 +136,27 @@ public class TimePicker extends FrameLayout {
         Log.i("minute", String.valueOf(currentMinute));
 
         if (isPhone) {
-            clockRadius = (mScreenWidth - 14 * mHorizontalPadding) / 2;
+            clockRadius = (mScreenWidth - 14 * mPadding) / 2;
         } else {
-            clockRadius = (mScreenHeight - 14 * mHorizontalPadding) / 2;
+            clockRadius = (mScreenHeight - 14 * mPadding) / 2;
         }
 
         centerX = clockRadius;
         centerY = centerX;
 
-        textRadius = clockRadius - 2 * mHorizontalPadding;
+        textRadius = clockRadius - 2 * mPadding;
         final double oneAngle = 30;
         double totalAngle = 0;
+
+        for (int i = 0; i < 12; i++) {
+            totalAngle += oneAngle;
+            float textX = (float) (textRadius * Math.sin(totalAngle * (Math.PI / 180)));
+            float textY = (float) (textRadius * Math.cos(totalAngle * (Math.PI / 180)));
+            float x = centerX + textX;
+            float y = centerY - textY;
+            Point point = new Point((int) x - 15, (int) y + 15);
+            clockTime.add(point);
+        }
         if (isHours) {
             presentTime = new Point((int) (centerX + textRadius * Math.sin(currentHour * mHourAngle * (Math.PI / 180))),
                     (int) (centerY - textRadius * Math.cos(currentHour * mHourAngle * (Math.PI / 180))));
@@ -156,16 +167,6 @@ public class TimePicker extends FrameLayout {
                     (int) (centerY - textRadius * Math.cos(currentMinute * mMinuteAngle * (Math.PI / 180))));
             currentAngle = currentMinute * mMinuteAngle;
         }
-        Log.i("current", String.valueOf(currentAngle));
-        for (int i = 0; i < 12; i++) {
-            totalAngle += oneAngle;
-            float textX = (float) (textRadius * Math.sin(totalAngle * (Math.PI / 180)));
-            float textY = (float) (textRadius * Math.cos(totalAngle * (Math.PI / 180)));
-            float x = centerX + textX;
-            float y = centerY - textY;
-            Point point = new Point((int) x - 15, (int) y + 15);
-            clockTime.add(point);
-        }
     }
 
     @Override
@@ -173,11 +174,11 @@ public class TimePicker extends FrameLayout {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
         getWindowParams();
         if (isPhone) {
-            int width = mScreenWidth - 10 * mHorizontalPadding;
+            int width = mScreenWidth - 10 * mPadding;
             int height = width;
             setMeasuredDimension(width, height);
         } else {
-            int width = mScreenHeight - 10 * mHorizontalPadding;
+            int width = mScreenHeight - 10 * mPadding;
             int height = width;
             setMeasuredDimension(width, height);
         }
@@ -190,14 +191,22 @@ public class TimePicker extends FrameLayout {
                 touchTime.set((int) event.getX(), (int) event.getY());
                 int i = isClockTimePressed();
                 if (i != -1) {
-                    aimAngle = mHourAngle * i;
-                    clockHandAnim();
-                    presentTime.set(clockTime.get(i - 1).x, clockTime.get(i - 1).y);
-                    currentAngle = aimAngle;
+                    if (isHours) {
+                        aimAngle = mHourAngle * i;
+                        clockHandAnim();
+                        currentAngle = aimAngle;
+                        currentHour = currentAngle / mHourAngle;
+                    } else {
+                        aimAngle = mHourAngle * i;
+                        clockHandAnim();
+                        currentAngle = aimAngle;
+                        currentMinute = currentAngle / mMinuteAngle;
+                    }
                 }
                 if (mOnTimeSelectedListener != null) {
                     mOnTimeSelectedListener.onTimeSelected();
                 }
+                mClockText.invalidate();
                 break;
             case MotionEvent.ACTION_MOVE :
                 break;
@@ -224,7 +233,6 @@ public class TimePicker extends FrameLayout {
         } else {
             ViewPropertyAnimator.animate(mClockHand).rotationBy(aimAngle + 360 - currentAngle).setDuration(300);
         }
-        invalidate();
     }
 
     private void fetchPrimaryColor() {
@@ -256,40 +264,52 @@ public class TimePicker extends FrameLayout {
         return this.isDarkTheme;
     }
 
-    public void setShowHours(boolean isHours) {
+    public void setShowHours() {
         this.isHours = true;
         this.isMinutes = false;
-        invalidate();
+        aimAngle = currentHour * mHourAngle;
+        clockHandAnim();
+        currentAngle = aimAngle;
+
+        mClockText.invalidate();
     }
 
-    public void setShowMinutes(boolean isMinutes) {
+    public void setShowMinutes() {
         this.isMinutes = true;
         this.isHours = false;
-        invalidate();
+        aimAngle = currentMinute * mMinuteAngle;
+        clockHandAnim();
+        currentAngle = aimAngle;
+
+        mClockText.invalidate();
     }
 
-    public int getcurrentTime() {
-        if (isHours) {
-            return currentAngle / mHourAngle;
-        } else {
-            return currentAngle / mMinuteAngle;
-        }
+    public int getCurrentHour() {
+        return currentHour;
+    }
+
+    public int getCurrentMinute() {
+        return currentMinute;
     }
 
     public void setCurrentHour(int hour) {
-        aimAngle = hour * mHourAngle;
-        presentTime.set(clockTime.get(hour - 1).x, clockTime.get(hour - 1).y);
-        clockHandAnim();
-        currentAngle = aimAngle;
-        invalidate();
+        if (currentHour == hour) {
+            currentAngle = mHourAngle * currentHour;
+            aimAngle = hour * mHourAngle;
+            clockHandAnim();
+            currentAngle = aimAngle;
+            currentHour = currentAngle / mHourAngle;
+        }
     }
 
     public void setCurrentMinute(int minute) {
-        aimAngle = minute * mMinuteAngle;
-        presentTime.set(clockTime.get(minute / 5 - 1).x, clockTime.get(minute / 5 - 1).y);
-        clockHandAnim();
-        currentAngle = aimAngle;
-        invalidate();
+        if (currentMinute == minute) {
+            currentAngle = mMinuteAngle * currentMinute;
+            aimAngle = minute * mMinuteAngle;
+            clockHandAnim();
+            currentAngle = aimAngle;
+            currentMinute = currentAngle / mMinuteAngle;
+        }
     }
 
     private class Clock extends View {
@@ -443,7 +463,22 @@ public class TimePicker extends FrameLayout {
             mPaint.setDither(true);
             mPaint.setTextSize(mTextSize);
             for (int i = 0; i < 12; i++) {
-                if (clockTime.get(i).x == presentTime.x && clockTime.get(i).y == presentTime.y) {
+                if (i == (currentHour - 1)) {
+                    if (isDarkTheme) {
+                        mPaint.setColor(ColorUtils.getColorWithAlpha(Color.rgb(0, 0, 0), 0.54f));
+                    } else {
+                        mPaint.setColor(ColorUtils.getColorWithAlpha(Color.rgb(255, 255, 255), 0.87f));
+                    }
+                    canvas.drawText(String.valueOf(i + 1), clockTime.get(i).x, clockTime.get(i).y, mPaint);
+                } else {
+                    if (isDarkTheme) {
+                        mPaint.setColor(ColorUtils.getColorWithAlpha(Color.rgb(255, 255, 255), 0.87f));
+                    } else {
+                        mPaint.setColor(ColorUtils.getColorWithAlpha(Color.rgb(0, 0, 0), 0.54f));
+                    }
+                    canvas.drawText(String.valueOf(i + 1), clockTime.get(i).x, clockTime.get(i).y, mPaint);
+                }
+                /*if (clockTime.get(i).x == presentTime.x && clockTime.get(i).y == presentTime.y) {
                     if (isDarkTheme) {
                         mPaint.setColor(ColorUtils.getColorWithAlpha(Color.rgb(0, 0, 0), 0.87f));
                     } else {
@@ -457,7 +492,7 @@ public class TimePicker extends FrameLayout {
                         mPaint.setColor(ColorUtils.getColorWithAlpha(Color.rgb(0, 0, 0), 0.87f));
                     }
                     canvas.drawText(String.valueOf(i + 1), clockTime.get(i).x, clockTime.get(i).y, mPaint);
-                }
+                }*/
             }
         }
 
@@ -466,16 +501,16 @@ public class TimePicker extends FrameLayout {
             mPaint.setDither(true);
             mPaint.setTextSize(mTextSize);
             for (int i = 0; i < 12; i++) {
-                if (clockTime.get(i).x == presentTime.x && clockTime.get(i).y == presentTime.y) {
+                if ((i + 1) == currentMinute / 5 && currentMinute % 5 == 0) {
                     if (isDarkTheme) {
                         mPaint.setColor(ColorUtils.getColorWithAlpha(Color.rgb(0, 0, 0), 0.54f));
                     } else {
-                        mPaint.setColor(ColorUtils.getColorWithAlpha(Color.rgb(255, 255, 255), 0.70f));
+                        mPaint.setColor(ColorUtils.getColorWithAlpha(Color.rgb(255, 255, 255), 0.87f));
                     }
                     canvas.drawText(String.valueOf((i + 1) * 5), clockTime.get(i).x, clockTime.get(i).y, mPaint);
                 } else {
                     if (isDarkTheme) {
-                        mPaint.setColor(ColorUtils.getColorWithAlpha(Color.rgb(255, 255, 255), 0.70f));
+                        mPaint.setColor(ColorUtils.getColorWithAlpha(Color.rgb(255, 255, 255), 0.87f));
                     } else {
                         mPaint.setColor(ColorUtils.getColorWithAlpha(Color.rgb(0, 0, 0), 0.54f));
                     }

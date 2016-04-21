@@ -17,6 +17,7 @@ import android.widget.TextView;
 
 import com.zpauly.pickers.R;
 import com.zpauly.pickers.utils.ColorUtils;
+import com.zpauly.pickers.utils.DevicesUtils;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -32,7 +33,7 @@ public class Header extends LinearLayout {
     private boolean selectPm;
     private int mTimeSize;
     private int mAmPmSize;
-    private int mHorizontalPadding;
+    private int mPadding;
     private int mComponentsMargin;
     private int mLayoutMargin;
 
@@ -51,6 +52,17 @@ public class Header extends LinearLayout {
     private TextView mColon;
     private TextView mAM;
     private TextView mPM;
+
+    private OnHourOrMinuteSelectedListener mOnHourOrMinuteSelectedListener;
+    private OnAMOrPMSelectedListener mOnAMOrPMSelectedListener;
+
+    public interface OnHourOrMinuteSelectedListener {
+        void onHourOrMinuteSeleted();
+    }
+
+    public interface OnAMOrPMSelectedListener {
+        void onAMOrPMSelected();
+    }
 
     public Header(Context context) {
         this(context, null);
@@ -78,17 +90,18 @@ public class Header extends LinearLayout {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
         getWindowParams();
         if (isPhone) {
-            int width = mScreenWidth - 12 * mHorizontalPadding;
+            int width = mScreenWidth - 10 * mPadding;
             int height = mTimeLayout.getHeight() + getPaddingTop() + getPaddingBottom();
             setMeasuredDimension(width, height);
         } else {
-            int height = mScreenHeight - 12 * mHorizontalPadding;
+            int height = mScreenHeight - 10 * mPadding;
             int width = mTimeLayout.getWidth() + getPaddingLeft() + getPaddingRight();
             setMeasuredDimension(width, height);
         }
     }
 
     private void initView() {
+        /*isPhone = DevicesUtils.isTablet(mContext);*/
         initParams();
         mTimeLayout = new LinearLayout(mContext);
         mAMOrPMLayout = new LinearLayout(mContext);
@@ -124,7 +137,7 @@ public class Header extends LinearLayout {
 
     @SuppressWarnings("deprecation")
     private void initParams() {
-        mHorizontalPadding = getResources().getDimensionPixelOffset(R.dimen.horizontal_padding);
+        mPadding = getResources().getDimensionPixelOffset(R.dimen.horizontal_padding);
         mTimeSize = getResources().getDimensionPixelSize(R.dimen.time_text_size);
         mAmPmSize = getResources().getDimensionPixelSize(R.dimen.am_pm_text_size);
         mComponentsMargin = getResources().getDimensionPixelOffset(R.dimen.header_components_margin);
@@ -253,22 +266,46 @@ public class Header extends LinearLayout {
         mMinute.setText(sequence);
     }
 
+    public void setOnHourOrMinuteSelectedListener(OnHourOrMinuteSelectedListener listener) {
+        mOnHourOrMinuteSelectedListener = listener;
+    }
+
+    public void setOnAMOrPMSelectedListener(OnAMOrPMSelectedListener listener) {
+        mOnAMOrPMSelectedListener = listener;
+    }
+
+    public boolean isHourSelected() {
+        return this.selectHours;
+    }
+
+    public boolean isAMSelected() {
+        return this.selectAm;
+    }
+
     public void setSelected() {
         mHour.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
                 selectHours = true;
                 selectMinutes = false;
-                invalidate();
+                mHour.setTextColor(ColorUtils.getColorWithAlpha(Color.rgb(255, 255, 255), 0.87f));
+                mMinute.setTextColor(ColorUtils.getColorWithAlpha(Color.rgb(255, 255, 255), 0.54f));
+                if (mOnHourOrMinuteSelectedListener != null) {
+                    mOnHourOrMinuteSelectedListener.onHourOrMinuteSeleted();
+                }
             }
         });
 
-        mHour.setOnClickListener(new OnClickListener() {
+        mMinute.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
                 selectMinutes = true;
                 selectHours = false;
-                invalidate();
+                mHour.setTextColor(ColorUtils.getColorWithAlpha(Color.rgb(255, 255, 255), 0.54f));
+                mMinute.setTextColor(ColorUtils.getColorWithAlpha(Color.rgb(255, 255, 255), 0.87f));
+                if (mOnHourOrMinuteSelectedListener != null) {
+                    mOnHourOrMinuteSelectedListener.onHourOrMinuteSeleted();
+                }
             }
         });
 
@@ -277,7 +314,11 @@ public class Header extends LinearLayout {
             public void onClick(View v) {
                 selectAm = true;
                 selectPm = false;
-                invalidate();
+                mAM.setTextColor(ColorUtils.getColorWithAlpha(Color.rgb(255, 255, 255), 0.87f));
+                mPM.setTextColor(ColorUtils.getColorWithAlpha(Color.rgb(255, 255, 255), 0.54f));
+                if (mOnAMOrPMSelectedListener != null) {
+                    mOnAMOrPMSelectedListener.onAMOrPMSelected();
+                }
             }
         });
 
@@ -286,7 +327,11 @@ public class Header extends LinearLayout {
             public void onClick(View v) {
                 selectPm = true;
                 selectAm = false;
-                invalidate();
+                mAM.setTextColor(ColorUtils.getColorWithAlpha(Color.rgb(255, 255, 255), 0.54f));
+                mPM.setTextColor(ColorUtils.getColorWithAlpha(Color.rgb(255, 255, 255), 0.87f));
+                if (mOnAMOrPMSelectedListener != null) {
+                    mOnAMOrPMSelectedListener.onAMOrPMSelected();
+                }
             }
         });
     }

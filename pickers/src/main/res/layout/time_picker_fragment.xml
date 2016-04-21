@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical" android:layout_width="wrap_content"
+    android:layout_height="wrap_content">
+
+    <com.zpauly.pickers.components.Header
+        android:id="@+id/header"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"/>
+
+    <com.zpauly.pickers.TimePickers.TimePicker
+        android:id="@+id/picker"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"/>
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/touch_target">
+
+        <Button
+            android:layout_alignParentEnd="true"
+            android:id="@+id/ok"
+            android:minWidth="@dimen/button_min_width"
+            android:layout_width="wrap_content"
+            android:layout_height="@dimen/button_height" />
+
+        <Button
+            android:layout_toStartOf="@id/ok"
+            android:id="@+id/cancel"
+            android:minWidth="@dimen/button_min_width"
+            android:layout_width="wrap_content"
+            android:layout_height="@dimen/button_height" />
+
+    </RelativeLayout>
+
+</LinearLayout>
