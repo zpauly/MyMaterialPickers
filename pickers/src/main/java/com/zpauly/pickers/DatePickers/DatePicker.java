@@ -3,17 +3,16 @@ package com.zpauly.pickers.DatePickers;
 import android.annotation.TargetApi;
 import android.content.Context;
 import android.content.res.TypedArray;
-import android.graphics.Point;
+import android.graphics.drawable.Drawable;
+import android.graphics.drawable.ShapeDrawable;
+import android.graphics.drawable.shapes.OvalShape;
 import android.os.Build;
 import android.util.AttributeSet;
 import android.util.TypedValue;
-import android.view.Gravity;
-import android.view.WindowManager;
-import android.widget.FrameLayout;
+import android.view.ViewGroup;
 import android.widget.LinearLayout;
-import android.widget.TextView;
 
-import com.zpauly.pickers.R;
+import com.nineoldandroids.view.ViewPropertyAnimator;
 
 /**
  * Created by root on 16-4-16.
@@ -21,20 +20,14 @@ import com.zpauly.pickers.R;
 public class DatePicker extends LinearLayout {
     private Context mContext;
 
-    private boolean isPhone = true;
-    private int mScreenWidth;
-    private int mScreenHeight;
     private int mPrimaryColor;
-    private int mPadding;
-    private int mViewWidth;
-    private int mViewHeight;
 
-    private FrameLayout mMainLayout;
-    private LinearLayout[] mDaysLayout;
-    private LinearLayout[] mWeekLayout;
+    private LinearLayout mContainer;
 
-    private TextView mMonth;
-    private TextView[] mDays;
+    private DayPicker mDayPicker;
+    private YearPicker mYearPicker;
+
+    private boolean isYearShowing = true;
 
     public DatePicker(Context context) {
         this(context, null);
@@ -60,44 +53,41 @@ public class DatePicker extends LinearLayout {
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
-        if (isPhone) {
-            mViewWidth = mScreenWidth - 10 * mPadding;
-            mViewHeight = mViewWidth;
-            setMeasuredDimension(mViewWidth, mViewHeight);
-        } else {
-            mViewWidth= mScreenHeight - 10 * mPadding;
-            mViewHeight = mViewWidth;
-            setMeasuredDimension(mViewWidth, mViewHeight);
-        }
+        setMeasuredDimension(mYearPicker.getMeasuredWidth(), mYearPicker.getMeasuredHeight());
     }
 
     private void initView() {
         initParams();
+        setOrientation(VERTICAL);
 
-        mMainLayout = new FrameLayout(mContext);
-        mDaysLayout = new LinearLayout[3];
-        mWeekLayout = new LinearLayout[7];
+        mContainer = new LinearLayout(mContext);
+        mDayPicker = new DayPicker(mContext);
+        mYearPicker = new YearPicker(mContext);
 
-        mDays = new TextView[49];
+        mContainer.setOrientation(VERTICAL);
 
-        for (int i = 0; i < 7; i++) {
-            mWeekLayout[i] = new LinearLayout(mContext);
-            mWeekLayout[i].setOrientation(LinearLayout.HORIZONTAL);
-        }
-        for (int i = 0; i < 49; i++) {
-            mDays[i] = new TextView(mContext);
-            mDays[i].setWidth(mViewWidth / 7);
-            mDays[i].setGravity(Gravity.CENTER);
-        }
+        LinearLayout.LayoutParams layoutParams = new LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT);
+        addView(mContainer, -1, layoutParams);
 
-
+        setupYearPicker();
+        setupDayPicker();
     }
 
     private void initParams() {
         fetchPrimaryColor();
-        getWindowParams();
+    }
 
-        mPadding = getResources().getDimensionPixelOffset(R.dimen.horizontal_padding);
+    private void setupYearPicker() {
+        LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT);
+        mContainer.addView(mYearPicker, -1, layoutParams);
+    }
+
+    private void setupDayPicker() {
+        LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT);
+        mContainer.addView(mDayPicker, -1, layoutParams);
     }
 
     private void fetchPrimaryColor() {
@@ -108,11 +98,23 @@ public class DatePicker extends LinearLayout {
         mPrimaryColor = color;
     }
 
-    private void getWindowParams() {
-        WindowManager wm = (WindowManager) mContext.getSystemService(Context.WINDOW_SERVICE);
-        Point point = new Point();
-        wm.getDefaultDisplay().getSize(point);
-        mScreenHeight = point.y;
-        mScreenWidth = point.x;
+    public void YearDayChangeAnim() {
+        if (isYearShowing) {
+            isYearShowing = false;
+            ViewPropertyAnimator.animate(mContainer).translationY(-mYearPicker.getMeasuredHeight()).start();
+        } else {
+            isYearShowing = true;
+            ViewPropertyAnimator.animate(mContainer).translationY(0).start();
+        }
+    }
+
+    public boolean isYearShowing() {
+        return this.isYearShowing;
+    }
+
+    private Drawable drawBg() {
+        ShapeDrawable shapeDrawable = new ShapeDrawable(new OvalShape());
+        shapeDrawable.getPaint().setColor(mPrimaryColor);
+        return shapeDrawable;
     }
 }

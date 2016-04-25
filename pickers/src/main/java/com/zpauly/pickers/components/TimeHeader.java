@@ -17,7 +17,6 @@ import android.widget.TextView;
 
 import com.zpauly.pickers.R;
 import com.zpauly.pickers.utils.ColorUtils;
-import com.zpauly.pickers.utils.DevicesUtils;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -25,7 +24,7 @@ import java.util.Date;
 /**
  * Created by root on 16-4-19.
  */
-public class Header extends LinearLayout {
+public class TimeHeader extends LinearLayout {
     private boolean isPhone = true;
     private boolean selectHours = true;
     private boolean selectMinutes = false;
@@ -64,22 +63,22 @@ public class Header extends LinearLayout {
         void onAMOrPMSelected();
     }
 
-    public Header(Context context) {
+    public TimeHeader(Context context) {
         this(context, null);
     }
 
-    public Header(Context context, AttributeSet attrs) {
+    public TimeHeader(Context context, AttributeSet attrs) {
         this(context, attrs, 0);
     }
 
     @TargetApi(Build.VERSION_CODES.LOLLIPOP)
-    public Header(Context context, AttributeSet attrs, int defStyleAttr, int defStyleRes) {
+    public TimeHeader(Context context, AttributeSet attrs, int defStyleAttr, int defStyleRes) {
         super(context, attrs, defStyleAttr, defStyleRes);
         mContext = context;
         initView();
     }
 
-    public Header(Context context, AttributeSet attrs, int defStyleAttr) {
+    public TimeHeader(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
         mContext = context;
         initView();

@@ -1,14 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:orientation="vertical" android:layout_width="wrap_content"
-    android:layout_height="wrap_content">
+    android:layout_height="wrap_content"
+    android:id="@+id/datepicker_layout">
 
-    <com.zpauly.pickers.components.TimeHeader
+    <com.zpauly.pickers.components.DateHeader
         android:id="@+id/header"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"/>
 
-    <com.zpauly.pickers.TimePickers.TimePicker
+    <com.zpauly.pickers.DatePickers.DatePicker
         android:id="@+id/picker"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"/>

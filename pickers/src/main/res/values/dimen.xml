@@ -15,8 +15,10 @@
     <dimen name="button_height">36dp</dimen>
     <dimen name="touch_target">48dp</dimen>
 
-    <dimen name="simple_date_text_size">14sp</dimen>
-    <dimen name="simple_year_text_size">21sp</dimen>
-    <dimen name="selected_year_text_size">30sp</dimen>
-    <dimen name="text_padding">8dp</dimen>
+    <dimen name="simple_date_text_size">6sp</dimen>
+    <dimen name="simple_year_text_size">8sp</dimen>
+    <dimen name="selected_year_text_size">12sp</dimen>
+    <dimen name="item_text_height">40dp</dimen>
+    <dimen name="item_height">35dp</dimen>
+    <dimen name="header_date_text_size">15sp</dimen>
 </resources>

@@ -12,7 +12,7 @@ import android.view.Window;
 import android.widget.Button;
 
 import com.zpauly.pickers.R;
-import com.zpauly.pickers.components.Header;
+import com.zpauly.pickers.components.TimeHeader;
 import com.zpauly.pickers.support.OnButtonClickedListener;
 
 /**
@@ -28,7 +28,7 @@ public class TimePickerDialog extends DialogFragment {
 
     private Button mOk;
     private Button mCancel;
-    private Header mHeader;
+    private TimeHeader mTimeHeader;
     private TimePicker mTimePicker;
 
     private int selectedHour;
@@ -78,12 +78,12 @@ public class TimePickerDialog extends DialogFragment {
 
         mOk = (Button) mDialog.findViewById(R.id.ok);
         mCancel = (Button) mDialog.findViewById(R.id.cancel);
-        mHeader = (Header) mDialog.findViewById(R.id.header);
+        mTimeHeader = (TimeHeader) mDialog.findViewById(R.id.header);
         mTimePicker = (TimePicker) mDialog.findViewById(R.id.picker);
 
         setupPicker();
         setupHeader();
-        setupButton();
+        setupButtons();
 
         selectedHour = mTimePicker.getCurrentHour();
         selectedMinute = mTimePicker.getCurrentMinute();
@@ -98,22 +98,22 @@ public class TimePickerDialog extends DialogFragment {
         mTimePicker.setOnTimeSelectedListener(new TimePicker.OnTimeSelectedlistener() {
             @Override
             public void onTimeSelected() {
-                if (mHeader.isHourSelected()) {
+                if (mTimeHeader.isHourSelected()) {
                     selectedHour = mTimePicker.getCurrentHour();
-                    mHeader.setHour(String.valueOf(selectedHour));
+                    mTimeHeader.setHour(String.valueOf(selectedHour));
                 } else {
                     selectedMinute = mTimePicker.getCurrentMinute();
-                    mHeader.setMinute(String.valueOf(selectedMinute));
+                    mTimeHeader.setMinute(String.valueOf(selectedMinute));
                 }
             }
         });
     }
 
     public void setupHeader() {
-        mHeader.setOnHourOrMinuteSelectedListener(new Header.OnHourOrMinuteSelectedListener() {
+        mTimeHeader.setOnHourOrMinuteSelectedListener(new TimeHeader.OnHourOrMinuteSelectedListener() {
             @Override
             public void onHourOrMinuteSeleted() {
-                if (mHeader.isHourSelected()) {
+                if (mTimeHeader.isHourSelected()) {
                     mTimePicker.setShowHours();
                 } else {
                     mTimePicker.setShowMinutes();
@@ -121,10 +121,10 @@ public class TimePickerDialog extends DialogFragment {
             }
         });
 
-        mHeader.setOnAMOrPMSelectedListener(new Header.OnAMOrPMSelectedListener() {
+        mTimeHeader.setOnAMOrPMSelectedListener(new TimeHeader.OnAMOrPMSelectedListener() {
             @Override
             public void onAMOrPMSelected() {
-                if (mHeader.isAMSelected()) {
+                if (mTimeHeader.isAMSelected()) {
                     isAM = true;
                 } else {
                     isAM = false;
@@ -143,7 +143,7 @@ public class TimePickerDialog extends DialogFragment {
         outState.putBoolean(IS_AM, isAM);
     }
 
-    private void setupButton() {
+    private void setupButtons() {
         mCancel.setText("CANCEL");
         mCancel.setTextColor(mPrimaryColor);
         mCancel.setBackground(null);
