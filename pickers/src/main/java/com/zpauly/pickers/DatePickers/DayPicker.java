@@ -3,8 +3,13 @@ package com.zpauly.pickers.DatePickers;
 import android.annotation.TargetApi;
 import android.content.Context;
 import android.content.res.TypedArray;
+import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.ColorFilter;
 import android.graphics.Point;
+import android.graphics.drawable.Drawable;
+import android.graphics.drawable.ShapeDrawable;
+import android.graphics.drawable.shapes.OvalShape;
 import android.os.Build;
 import android.util.AttributeSet;
 import android.util.TypedValue;
@@ -20,10 +25,7 @@ import android.widget.TextView;
 import com.nineoldandroids.view.ViewPropertyAnimator;
 import com.zpauly.pickers.R;
 
-import java.text.DateFormatSymbols;
-import java.text.SimpleDateFormat;
 import java.util.Calendar;
-import java.util.Date;
 import java.util.GregorianCalendar;
 
 /**
@@ -32,7 +34,10 @@ import java.util.GregorianCalendar;
 public class DayPicker extends LinearLayout {
     private Context mContext;
 
+    private int thisYear;
     private int thisMonth;
+    private int thisDay;
+    private TextView lastSelectedTextView;
     private int count;
     private boolean hasBefore;
     private boolean hasNext;
@@ -56,7 +61,17 @@ public class DayPicker extends LinearLayout {
     private ImageView mBefore;
     private ImageView mNext;
 
-    private int mYear;
+    private OnSelectedListener onSelectedListener;
+
+    public interface OnSelectedListener {
+        void onMonthSelected();
+
+        void onDaySelected();
+    }
+
+    public void setOnSelectedListener(OnSelectedListener onSelectedListener) {
+        this.onSelectedListener = onSelectedListener;
+    }
 
     public DayPicker(Context context) {
         this(context, null);
@@ -104,8 +119,6 @@ public class DayPicker extends LinearLayout {
                     mDays[k][i][j] = new TextView(mContext);
                     mDays[k][i][j].setGravity(Gravity.CENTER);
                     mDays[k][i][j].setTextSize(mSimpleTextSize);
-                    mDays[k][i][j].setWidth(mViewWidth / 7);
-                    mDays[k][i][j].setHeight(mItemHeight);
                 }
             }
         }
@@ -155,7 +168,9 @@ public class DayPicker extends LinearLayout {
 
         GregorianCalendar d = new GregorianCalendar();
 
+        thisYear = d.get(Calendar.YEAR);
         thisMonth = d.get(Calendar.MONTH);
+        thisDay = d.get(Calendar.DATE);
         if (thisMonth == 0) {
             hasBefore = false;
         }
@@ -220,6 +235,11 @@ public class DayPicker extends LinearLayout {
                     if (count == 0) {
                         hasBefore = false;
                     }
+                    setCalendar(count);
+                    thisMonth = count;
+                    if (onSelectedListener != null) {
+                        onSelectedListener.onMonthSelected();
+                    }
                 }
             }
         });
@@ -234,6 +254,11 @@ public class DayPicker extends LinearLayout {
                     if (count == 11) {
                         hasNext = false;
                     }
+                    setCalendar(count);
+                    thisMonth = count;
+                    if (onSelectedListener != null) {
+                        onSelectedListener.onMonthSelected();
+                    }
                 }
             }
         });
@@ -246,18 +271,14 @@ public class DayPicker extends LinearLayout {
 
     private void setupDays() {
         for (int i = 0; i < 12; i++) {
-            mDays[i][0][0].setText("S");
-            mDays[i][0][1].setText("M");
-            mDays[i][0][2].setText("T");
-            mDays[i][0][3].setText("W");
-            mDays[i][0][4].setText("T");
-            mDays[i][0][5].setText("F");
-            mDays[i][0][6].setText("S");
-            for (int j = 0; j < 7; j ++) {
-                for (int k = 0; k < 7; k++) {
-                    mDays[i][j][k].setText(String.valueOf(j * k));
-                }
-            }
+            mDays[i][0][0].setText("Sun");
+            mDays[i][0][1].setText("Mon");
+            mDays[i][0][2].setText("Tues");
+            mDays[i][0][3].setText("Wen");
+            mDays[i][0][4].setText("Thur");
+            mDays[i][0][5].setText("Fri");
+            mDays[i][0][6].setText("Sat");
+            setCalendar(i);
         }
     }
 
@@ -265,8 +286,8 @@ public class DayPicker extends LinearLayout {
         for (int k = 0; k < 12; k++) {
             for (int i = 0; i < 7; i ++) {
                 for (int j = 0; j < 7; j ++) {
-                    LayoutParams layoutParams = new LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,
-                            ViewGroup.LayoutParams.WRAP_CONTENT);
+                    LayoutParams layoutParams = new LayoutParams(mViewWidth / 7,
+                            mItemHeight);
                     mWeekLayout[k][i].addView(mDays[k][i][j], -1, layoutParams);
                 }
             }
@@ -274,7 +295,7 @@ public class DayPicker extends LinearLayout {
 
         for (int i = 0; i < 12; i ++) {
             for (int j = 0; j < 7; j ++) {
-                LayoutParams layoutParams = new LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,
+                LayoutParams layoutParams = new LayoutParams(mViewWidth,
                         ViewGroup.LayoutParams.WRAP_CONTENT);
                 mDaysLayout[i].addView(mWeekLayout[i][j], -1, layoutParams);
             }
@@ -297,33 +318,123 @@ public class DayPicker extends LinearLayout {
         mScreenWidth = point.x;
     }
 
-    private void setCalendar() {
+    private void setCalendar(int month) {
         GregorianCalendar d = new GregorianCalendar();
-        int today = d.get(Calendar.DAY_OF_MONTH);
-        int month = d.get(Calendar.MONTH);
-
-        d.set(Calendar.DAY_OF_MONTH, 1);
-
-        int weekday = d.get(Calendar.DAY_OF_WEEK);
-
-        int firstDayOfWeek = d.getFirstDayOfWeek();
-
-        int indent = 0;
-        while(weekday != firstDayOfWeek) {
-            indent++;
-            d.add(Calendar.DAY_OF_MONTH, -1);
-            weekday = d.get(Calendar.DAY_OF_WEEK);
+        d.set(thisYear, month, 1);
+        int firstWeekday = d.get(Calendar.DAY_OF_WEEK);
+        int days = 0;
+        switch (month) {
+            case Calendar.JANUARY :
+                days = 31;
+                break;
+            case Calendar.FEBRUARY :
+                if (thisYear % 4 == 0)
+                    days = 29;
+                else
+                    days = 28;
+                break;
+            case Calendar.MARCH :
+                days = 31;
+                break;
+            case Calendar.APRIL :
+                days = 30;
+                break;
+            case Calendar.MAY :
+                days = 31;
+                break;
+            case Calendar.JUNE :
+                days = 30;
+                break;
+            case Calendar.JULY :
+                days = 31;
+                break;
+            case Calendar.AUGUST :
+                days = 31;
+                break;
+            case Calendar.SEPTEMBER :
+                days = 30;
+                break;
+            case Calendar.OCTOBER :
+                days = 31;
+                break;
+            case Calendar.NOVEMBER :
+                days = 30;
+                break;
+            case Calendar.DECEMBER :
+                days = 31;
+                break;
         }
-
-        String[] weekdayNames = new DateFormatSymbols().getShortWeekdays();
-        do {
-            d.add(Calendar.DAY_OF_MONTH, 1);
-        } while (weekday != firstDayOfWeek);
-
-        for (int i = 1; i < indent; i ++) {
-
+        int count = 1;
+        for (int i = 1; i < 7; i ++) {
+            for (int j = 0; j < 7; j ++) {
+                if (count >= firstWeekday && count <= (days + firstWeekday)) {
+                    mDays[month][i][j].setText(String.valueOf(count - firstWeekday + 1));
+                    mDays[month][i][j].setEnabled(true);
+                    if (count == (thisDay + firstWeekday - 1) && month == thisMonth) {
+                        if (lastSelectedTextView != null) {
+                            resetSelected(mDays[month][i][j]);
+                        }
+                        lastSelectedTextView = mDays[month][i][j];
+                        mDays[month][i][j].setBackground(setBgDrawable());
+                        mDays[month][i][j].setTextColor(Color.WHITE);
+                    }
+                    mDays[month][i][j].setOnClickListener(new OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            resetSelected((TextView) v);
+                            if (onSelectedListener != null) {
+                                onSelectedListener.onDaySelected();
+                            }
+                        }
+                    });
+                } else {
+                    mDays[month][i][j].setText("");
+                    mDays[month][i][j].setEnabled(false);
+                }
+                count ++;
+            }
         }
+    }
 
-        d.set(Calendar.DAY_OF_MONTH, 1);
+    public void setYear(int year) {
+        thisYear = year;
+        setupDays();
+    }
+
+    public void setMonth(int month) {
+        thisMonth = month;
+        setupDays();
+    }
+
+    public void setDay(int day) {
+        thisDay = day;
+        setupDays();
+    }
+
+    public int getYear() {
+        return thisYear;
+    }
+
+    public int getMonth() {
+        return thisMonth;
+    }
+
+    public int getDay() {
+        return thisDay;
+    }
+
+    private Drawable setBgDrawable() {
+        ShapeDrawable shape = new ShapeDrawable(new OvalShape());
+        shape.getPaint().setColor(mPrimaryColor);
+        return shape;
+    }
+
+    private void resetSelected(TextView view) {
+        lastSelectedTextView.setBackground(null);
+        lastSelectedTextView.setTextColor(view.getTextColors());
+        view.setBackground(setBgDrawable());
+        view.setTextColor(Color.WHITE);
+        lastSelectedTextView = view;
+        thisDay = Integer.parseInt(view.getText().toString());
     }
 }

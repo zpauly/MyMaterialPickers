@@ -3,19 +3,17 @@ package com.zpauly.pickers.DatePickers;
 import android.annotation.TargetApi;
 import android.content.Context;
 import android.content.res.TypedArray;
-import android.graphics.drawable.Drawable;
-import android.graphics.drawable.ShapeDrawable;
-import android.graphics.drawable.shapes.OvalShape;
 import android.os.Build;
 import android.util.AttributeSet;
 import android.util.TypedValue;
 import android.view.ViewGroup;
+import android.widget.AbsListView;
 import android.widget.LinearLayout;
 
 import com.nineoldandroids.view.ViewPropertyAnimator;
 
 /**
- * Created by root on 16-4-16.
+ * Created by zpauly on 16-4-16.
  */
 public class DatePicker extends LinearLayout {
     private Context mContext;
@@ -28,6 +26,20 @@ public class DatePicker extends LinearLayout {
     private YearPicker mYearPicker;
 
     private boolean isYearShowing = true;
+
+    private OnDateSelectedListener onDateSelectedListener;
+
+    public interface OnDateSelectedListener {
+        void onYearSelected();
+
+        void onMonthSelected();
+
+        void onDaySelected();
+    }
+
+    public void setOnDateSelectedListener(OnDateSelectedListener onDateSelectedListener) {
+        this.onDateSelectedListener = onDateSelectedListener;
+    }
 
     public DatePicker(Context context) {
         this(context, null);
@@ -79,12 +91,44 @@ public class DatePicker extends LinearLayout {
     }
 
     private void setupYearPicker() {
+        mYearPicker.setOnScrollChangeListener(new AbsListView.OnScrollListener() {
+            @Override
+            public void onScrollStateChanged(AbsListView view, int scrollState) {
+                if (scrollState == SCROLL_STATE_IDLE) {
+                    mDayPicker.setYear(mYearPicker.getSelectedYear());
+                    if (onDateSelectedListener != null) {
+                        onDateSelectedListener.onYearSelected();
+                    }
+                }
+            }
+
+            @Override
+            public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
+
+            }
+        });
         LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT);
         mContainer.addView(mYearPicker, -1, layoutParams);
     }
 
     private void setupDayPicker() {
+        mDayPicker.setYear(mYearPicker.getSelectedYear());
+        mDayPicker.setOnSelectedListener(new DayPicker.OnSelectedListener() {
+            @Override
+            public void onMonthSelected() {
+                if (onDateSelectedListener != null) {
+                    onDateSelectedListener.onMonthSelected();
+                }
+            }
+
+            @Override
+            public void onDaySelected() {
+                if (onDateSelectedListener != null) {
+                    onDateSelectedListener.onDaySelected();
+                }
+            }
+        });
         LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT);
         mContainer.addView(mDayPicker, -1, layoutParams);
@@ -98,7 +142,7 @@ public class DatePicker extends LinearLayout {
         mPrimaryColor = color;
     }
 
-    public void YearDayChangeAnim() {
+    public void yearDayChangeAnim() {
         if (isYearShowing) {
             isYearShowing = false;
             ViewPropertyAnimator.animate(mContainer).translationY(-mYearPicker.getMeasuredHeight()).start();
@@ -112,9 +156,15 @@ public class DatePicker extends LinearLayout {
         return this.isYearShowing;
     }
 
-    private Drawable drawBg() {
-        ShapeDrawable shapeDrawable = new ShapeDrawable(new OvalShape());
-        shapeDrawable.getPaint().setColor(mPrimaryColor);
-        return shapeDrawable;
+    public int getYear() {
+        return mDayPicker.getYear();
+    }
+
+    public int getMonth() {
+        return mDayPicker.getMonth() + 1;
+    }
+
+    public int getDay() {
+        return mDayPicker.getDay();
     }
 }

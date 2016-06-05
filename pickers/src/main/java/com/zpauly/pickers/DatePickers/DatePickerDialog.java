@@ -14,8 +14,11 @@ import com.zpauly.pickers.R;
 import com.zpauly.pickers.components.DateHeader;
 import com.zpauly.pickers.support.OnButtonClickedListener;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
 /**
- * Created by root on 16-4-23.
+ * Created by zpauly on 16-4-23.
  */
 public class DatePickerDialog extends DialogFragment {
     private View mDialog;
@@ -62,11 +65,29 @@ public class DatePickerDialog extends DialogFragment {
         mHeader.setOnYearOrDaySelectedListener(new DateHeader.OnYearOrDaySelectedListener() {
             @Override
             public void onYearOrDaySelected() {
-                if (mHeader.isYearSelected()) {
-                    mPicker.YearDayChangeAnim();
-                } else if (!mHeader.isYearSelected()) {
-                    mPicker.YearDayChangeAnim();
+                if (mHeader.isYearSelected() && !mPicker.isYearShowing()) {
+                    mPicker.yearDayChangeAnim();
+                } else if (!mHeader.isYearSelected() && mPicker.isYearShowing()) {
+                    mPicker.yearDayChangeAnim();
                 }
+            }
+        });
+        mPicker.setOnDateSelectedListener(new DatePicker.OnDateSelectedListener() {
+            @Override
+            public void onYearSelected() {
+                mHeader.setYear(mPicker.getYear());
+            }
+
+            @Override
+            public void onMonthSelected() {
+                SimpleDateFormat day = new SimpleDateFormat("EEE , MMM d");
+                mHeader.setDate(day.format(new Date(mPicker.getYear(), mPicker.getMonth() - 1, mPicker.getDay())));
+            }
+
+            @Override
+            public void onDaySelected() {
+                SimpleDateFormat day = new SimpleDateFormat("EEE , MMM d");
+                mHeader.setDate(day.format(new Date(mPicker.getYear(), mPicker.getMonth() - 1, mPicker.getDay())));
             }
         });
     }
@@ -107,7 +128,19 @@ public class DatePickerDialog extends DialogFragment {
         mPrimaryColor = color;
     }
 
-    private void setOnbuttonClickedListener(OnButtonClickedListener listener) {
+    public void setOnbuttonClickedListener(OnButtonClickedListener listener) {
         mOnButtonClickedListener = listener;
+    }
+
+    public int getYear() {
+        return mPicker.getYear();
+    }
+
+    public int getMonth() {
+        return mPicker.getMonth();
+    }
+
+    public int getDay() {
+        return mPicker.getDay();
     }
 }

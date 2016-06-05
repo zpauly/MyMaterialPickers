@@ -24,10 +24,12 @@ import com.zpauly.pickers.R;
 import com.zpauly.pickers.utils.ColorUtils;
 
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.GregorianCalendar;
 import java.util.List;
 
 /**
- * Created by root on 16-4-21.
+ * Created by zpauly on 16-4-21.
  */
 public class YearPicker extends LinearLayout {
     private Context mContext;
@@ -89,10 +91,13 @@ public class YearPicker extends LinearLayout {
         mAdapter = new Adapter(mContext, mYears);
         mPicker.setDividerHeight(0);
         mPicker.setAdapter(mAdapter);
+        mPicker.setSelection(selectedYear - 1970 - 3);
         mPicker.setOnScrollListener(new AbsListView.OnScrollListener() {
             @Override
             public void onScrollStateChanged(AbsListView view, int scrollState) {
-
+                if (mOnScrollChangeListener != null) {
+                    mOnScrollChangeListener.onScrollStateChanged(view, scrollState);
+                }
             }
 
             @Override
@@ -114,6 +119,7 @@ public class YearPicker extends LinearLayout {
                 if (mOnScrollChangeListener != null) {
                     mOnScrollChangeListener.onScroll(view, firstVisibleItem, visibleItemCount, totalItemCount);
                 }
+
             }
         });
 
@@ -125,6 +131,9 @@ public class YearPicker extends LinearLayout {
     private void initParams() {
         fetchPrimaryColor();
         getWindowParams();
+
+        GregorianCalendar calendar = new GregorianCalendar();
+        selectedYear = calendar.get(Calendar.YEAR);
 
         mItemHeight = getResources().getDimensionPixelOffset(R.dimen.item_text_height);
         mPadding = getResources().getDimensionPixelOffset(R.dimen.horizontal_padding);

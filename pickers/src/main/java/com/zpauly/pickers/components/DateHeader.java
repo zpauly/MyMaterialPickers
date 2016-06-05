@@ -22,7 +22,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 
 /**
- * Created by root on 16-4-23.
+ * Created by zpauly on 16-4-23.
  */
 public class DateHeader extends LinearLayout {
     private Context mContext;
@@ -168,7 +168,7 @@ public class DateHeader extends LinearLayout {
         return Integer.parseInt(mYear.getText().toString());
     }
 
-    public void setDate() {
-
+    public void setDate(String date) {
+        mDate.setText(date);
     }
 }
